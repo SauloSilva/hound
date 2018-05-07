@@ -5,6 +5,12 @@ import * as Ajax from '../../../modules/Ajax';
 import { getCSRFfromHead } from '../../../modules/Utils';
 
 export default class UpgradeSubscriptionLink extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { disabled: false };
+  }
+
   componentWillMount() {
     $.ajaxSetup({
       headers: {
@@ -33,7 +39,7 @@ export default class UpgradeSubscriptionLink extends React.Component {
     const { price, title } = this.props.nextTier;
 
     this.checkout().open({
-      name: title,
+      name: `Upgrade to ${title}`,
       amount: price * 100,
       email: userEmailAddress,
       panelLabel: "{{amount}} per month",
@@ -41,11 +47,40 @@ export default class UpgradeSubscriptionLink extends React.Component {
     });
   }
 
+  handleFailedUpgrade(response) {
+    const subscriptionFailed = response &&
+      response.errors &&
+      response.errors.includes("There was an issue creating the subscription");
+
+    if (subscriptionFailed) {
+      this.showCreditCardForm();
+    } else {
+      this.setState({ disabled: false });
+
+      // There's probably a more elegant way to do this
+      //
+      // Intercom doesn't seem available when component is set up
+      // to include in props
+      if (window.Intercom) {
+        window.Intercom(
+          "showNewMessage",
+          "I cannot upgrade and activate my repo. Please help!"
+        );
+      } else {
+        alert("Oh no, upgrading and activating a repo failed. Please contact us!");
+      }
+    }
+  }
+
   handleClick() {
+    this.setState({ disabled: true });
+
     const { repoId, userHasCard } = this.props;
 
     if (userHasCard) {
-      Ajax.upgradeSubscription(repoId);
+      Ajax.upgradeSubscription(repoId).fail(
+        (response) => this.handleFailedUpgrade(response.responseJSON)
+      );
     } else {
       this.showCreditCardForm();
     }
@@ -54,7 +89,11 @@ export default class UpgradeSubscriptionLink extends React.Component {
   render() {
     return(
       <a
-        className="repo-toggle tier-change-accept"
+        className={
+          this.state.disabled ?
+            "repo-toggle tier-change-accept disabled" :
+            "repo-toggle tier-change-accept"
+        }
         href="javascript:void(0);"
         onClick={() => this.handleClick()}
       >Upgrade</a>

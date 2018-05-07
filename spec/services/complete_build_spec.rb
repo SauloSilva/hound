@@ -139,11 +139,11 @@ describe CompleteBuild do
 
     def stubbed_github_api
       github_api = instance_double(
-        "GithubApi",
+        "GitHubApi",
         create_success_status: nil,
         create_error_status: nil,
       )
-      allow(GithubApi).to receive(:new).and_return(github_api)
+      allow(GitHubApi).to receive(:new).and_return(github_api)
 
       github_api
     end
@@ -164,10 +164,15 @@ describe CompleteBuild do
           messages: [violation_message],
         )
       end
+      repo = instance_double(
+        "Repo",
+        subscription: false,
+        owner: MissingOwner.new,
+      )
       default_attributes = {
         completed?: true,
         review_errors: [],
-        repo: instance_double("Repo", subscription: false),
+        repo: repo,
         repo_name: "foo/bar",
         commit_sha: "abc123",
         violations: violations,

@@ -141,7 +141,7 @@ To test Stripe payments on staging use this fake credit card number.
 The main Hound app (this app) receives PR hooks from GitHub, then it
 communicates with the [Linters](https://github.com/houndci/linters) app
 (or a few individual linter services) to review changed files in the PR.
-Linters communcate back with vioaltions they found, and the Hound app sends
+Linters communicate back with violations they found, and the Hound app sends
 comments back to GitHub.
 
 Here is the list of all the linters and where to find them,
@@ -184,14 +184,17 @@ as well as any default configuration they might use:
     * [houndci/linters](https://github.com/houndci/linters/tree/master/lib/linters/credo)
 1. Go
     * [Golint](https://github.com/golang/lint)
-    * [houndci/go](https://github.com/houndci/go)
+    * [houndci/linters](https://github.com/houndci/linters/tree/master/lib/linters/golint)
 1. Markdown
     * [Remark](https://github.com/wooorm/remark)
-    * [houndci/remark](https://github.com/houndci/remark)
+    * [houndci/linters](https://github.com/houndci/linters/tree/master/lib/linters/remark)
 1. Swift
     * [SwiftLint](https://github.com/realm/SwiftLint)
     * [houndci/swift](https://github.com/houndci/swift)
     * [default config](https://raw.githubusercontent.com/houndci/swift/master/config/default.yml)
+1. Shell scripts
+    * [ShellCheck](https://github.com/koalaman/shellcheck)
+    * [houndci/linters](https://github.com/houndci/linters/tree/master/lib/linters/shellcheck)
 
 ### Writing a Linter
 
@@ -229,9 +232,6 @@ Once linting is complete, resulting violations should be posted to the outbound
   linter job. This is provided by the inbound queue.
 * `patch` - The patch content from GitHub for the file being reviewed. This is
   provided by the inbound queue.
-
-If the given `config` is invalid, the invalid file should be posted to the
-outbound `ReportInvalidConfigJob` queue:
 
 * `commit_sha` - The git commit SHA of the code snippet. This is provided by the
   inbound queue.

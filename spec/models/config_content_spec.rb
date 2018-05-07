@@ -2,6 +2,7 @@ require "spec_helper"
 require "app/models/config_content"
 require "app/models/config_content/remote"
 require "app/models/config/parser"
+require "app/models/config/parser_error"
 require "faraday"
 require "json"
 
@@ -46,7 +47,7 @@ RSpec.describe ConfigContent do
     end
 
     context "when there is no file path" do
-      it "is an empty hash" do
+      it "returns an empty hash" do
         commit = instance_double("Commit")
         parser = ->(_) {}
         config_content = ConfigContent.new(
@@ -85,7 +86,7 @@ RSpec.describe ConfigContent do
             file_path: file_path,
             parser: parser,
           ).load
-        end.to raise_error(ConfigContent::ContentError)
+        end.to raise_error(Config::ParserError)
       end
     end
 
@@ -102,10 +103,24 @@ RSpec.describe ConfigContent do
             file_path: file_path,
             parser: parser,
           ).load
-        end.to raise_error(
-          ConfigContent::ContentError,
-          %{"config-file.txt" must be a Hash},
+        end.to raise_error(Config::ParserError)
+      end
+    end
+
+    context "when the parsed YAML config is blank" do
+      it "returns empty hash" do
+        file_path = ".rubocop.yml"
+        parser = ->(content) { Config::Parser.yaml(content) }
+        commit = instance_double("Commit", file_content: "")
+        config_content = ConfigContent.new(
+          commit: commit,
+          file_path: file_path,
+          parser: parser,
         )
+
+        result = config_content.load
+
+        expect(result).to eq({})
       end
     end
   end

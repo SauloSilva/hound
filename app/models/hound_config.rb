@@ -1,35 +1,37 @@
 # frozen_string_literal: true
 class HoundConfig
+  CONFIG_FILE = ".hound.yml"
   LINTERS = {
     Linter::CoffeeScript => { default: true },
     Linter::Credo => { default: false },
     Linter::Eslint => { default: false },
+    Linter::Flake8 => { default: false },
     Linter::Flog => { default: false },
-    Linter::Go => { default: true },
+    Linter::Golint => { default: true },
     Linter::Haml => { default: true },
     Linter::Jshint => { default: true },
-    Linter::Flake8 => { default: false },
     Linter::Reek => { default: false },
     Linter::Remark => { default: false },
-    Linter::Ruby => { default: true },
+    Linter::Rubocop => { default: true },
     Linter::SassLint => { default: false },
     Linter::Scss => { default: true },
+    Linter::Shellcheck => { default: false },
     Linter::SlimLint => { default: false },
     Linter::Stylelint => { default: false },
     Linter::Swift => { default: true },
     Linter::Tslint => { default: false },
   }.freeze
-  CONFIG_FILE = ".hound.yml"
 
-  attr_reader_initialize :commit
+  attr_initialize [:commit!, :owner!]
+  attr_reader :commit
+  attr_private :owner
 
   def content
-    @_content ||= default_config.deep_merge(resolved_conflicts_config)
+    @_content ||= default_config.deep_merge(merged_config)
   end
 
   def linter_enabled?(name)
-    key = name.downcase
-    config = options_for(key)
+    config = options_for(name)
 
     !!config["enabled"]
   end
@@ -47,6 +49,14 @@ class HoundConfig
     end
   end
 
+  def merged_config
+    owner_config.deep_merge(resolved_conflicts_config)
+  end
+
+  def resolved_conflicts_config
+    ResolveConfigConflicts.call(resolved_aliases_config)
+  end
+
   def resolved_aliases_config
     ResolveConfigAliases.call(normalized_config)
   end
@@ -55,19 +65,21 @@ class HoundConfig
     NormalizeConfig.call(parsed_config)
   end
 
-  def resolved_conflicts_config
-    ResolveConfigConflicts.call(resolved_aliases_config)
-  end
-
   def parsed_config
     parse(commit.file_content(CONFIG_FILE))
   end
 
   def parse(file_content)
     Config::Parser.yaml(file_content) || {}
+  rescue Config::ParserError
+    raise Config::ParserError, "#{CONFIG_FILE} format is invalid"
   end
 
   def options_for(name)
     content.fetch(name, {})
+  end
+
+  def owner_config
+    owner.hound_config_content
   end
 end

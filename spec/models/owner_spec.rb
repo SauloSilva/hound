@@ -91,7 +91,7 @@ describe Owner do
   describe "#config_content" do
     it "returns the content for a specific linter" do
       owner_hound_config = {
-        "ruby" => {
+        "rubocop" => {
           "config_file" => ".rubocop.yml",
         },
       }
@@ -101,16 +101,16 @@ describe Owner do
       owner_hound_contents = owner_hound_config.to_yaml
       owner_ruby_contents = owner_ruby_config.to_yaml
       owner = create(:owner, config_repo: "foo/bar", config_enabled: true)
-      github_api = instance_double("GithubApi", repo: true)
+      github_api = instance_double("GitHubApi", repo: true)
       allow(github_api).to receive(:file_contents).
         with("foo/bar", ".hound.yml", "HEAD").
         and_return(double(content: Base64.encode64(owner_hound_contents)))
       allow(github_api).to receive(:file_contents).
         with("foo/bar", ".rubocop.yml", "HEAD").
         and_return(double(content: Base64.encode64(owner_ruby_contents)))
-      allow(GithubApi).to receive(:new).and_return(github_api)
+      allow(GitHubApi).to receive(:new).and_return(github_api)
 
-      expect(owner.config_content("ruby")).to eq(owner_ruby_config)
+      expect(owner.config_content("rubocop")).to eq(owner_ruby_config)
     end
   end
 end

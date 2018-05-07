@@ -1,4 +1,4 @@
-module GithubApiHelper
+module GitHubApiHelper
   def stub_add_collaborator_request(username, repo_name, user_token)
     stub_request(
       :put,
@@ -185,7 +185,7 @@ module GithubApiHelper
 
   def status_request_body(description, state, target_url)
     {
-      context: "hound",
+      context: "Hound",
       description: description,
       state: state,
       target_url: target_url,

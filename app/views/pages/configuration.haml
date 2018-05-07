@@ -6,7 +6,7 @@
       %li
         = link_to "Hound", "#configuration", class: "docs-nav-link"
       %li
-        = link_to "Ruby", "#ruby", class: "docs-nav-link"
+        = link_to "RuboCop", "#rubocop", class: "docs-nav-link"
       %li
         = link_to "CoffeeScript", "#coffeescript", class: "docs-nav-link"
       %li
@@ -16,7 +16,7 @@
       %li
         = link_to "Haml", "#haml", class: "docs-nav-link"
       %li
-        = link_to "Go", "#go", class: "docs-nav-link"
+        = link_to "Golint", "#golint", class: "docs-nav-link"
       %li
         = link_to "Swift", "#swift", class: "docs-nav-link"
       %li
@@ -29,6 +29,8 @@
         = link_to "Elixir", "#elixir", class: "docs-nav-link"
       %li
         = link_to "Sass Lint", "#sass-lint", class: "docs-nav-link"
+      %li
+        = link_to "ShellCheck", "#shellcheck", class: "docs-nav-link"
 
   %section.docs-content
     %article.docs-article
@@ -79,7 +81,7 @@
           scss:
             enabled: false
 
-          ruby:
+          rubocop:
             config_file: .rubocop.yml
 
           jshint:
@@ -105,8 +107,8 @@
         :preserve
           fail_on_violations: true
 
-    %article.docs-article#ruby
-      %h2 Ruby
+    %article.docs-article#rubocop
+      %h2 RuboCop
       %p
         Hound uses
         = link_to "RuboCop",
@@ -133,7 +135,7 @@
 
         %code.code-block
           :preserve
-            ruby:
+            rubocop:
               config_file: .rubocop.yml
 
       %p
@@ -142,7 +144,7 @@
 
         %code.code-block
           :preserve
-            ruby:
+            rubocop:
               enabled: false
 
     %article.docs-article#coffeescript
@@ -306,8 +308,8 @@
             haml:
               enabled: false
 
-    %article.docs-article#go
-      %h2 Go
+    %article.docs-article#golint
+      %h2 Golint
 
       %p
         Hound uses
@@ -322,7 +324,7 @@
 
         %code.code-block
           :preserve
-            go:
+            golint:
               enabled: false
 
     %article.docs-article#swift
@@ -563,7 +565,7 @@
         %em.code-inline .sass-lint.yml
         file to your project,
         specify your desired configuration
-        and refreence the file in your
+        and reference the file in your
         %em.code-inline .hound.yml
 
       %p
@@ -572,6 +574,51 @@
             sass-lint:
               enabled: true
               config_file: .sass-lint.yml
+
+    %article.docs-article#shellcheck
+      %h2 ShellCheck
+      %p
+        Hound uses
+        = link_to "ShellCheck",
+          "https://github.com/koalaman/shellcheck",
+          new_window_options
+        to review shell scripts.
+
+      %p
+        To enable ShellCheck style checking, add the following to your
+        %em.code-inline .hound.yml
+
+        %code.code-block
+          :preserve
+            shellcheck:
+              enabled: true
+      %p
+        To tell ShellCheck to ignore certain codes, add
+        %em.code-inline .shellcheck.yml
+        file to your project (or give it another name if you like),
+        include in it codes you want ignored, and reference the file in your
+        %em.code-inline .hound.yml
+
+      %p
+        %code.code-block
+          :preserve
+            shellcheck:
+              enabled: true
+              config_file: .shellcheck.yml
+
+      %p
+        Example config file:
+        %code.code-block
+          :preserve
+            exclude:
+              - CODE1
+              - CODE2
+
+        See
+        = link_to "ShellCheck wiki",
+          "https://github.com/koalaman/shellcheck/wiki",
+          new_window_options
+        for information on ShellCheck codes.
 
     %article.docs-article
       %h3 Didn't find what you where looking for?

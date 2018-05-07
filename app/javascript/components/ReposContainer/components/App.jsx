@@ -134,7 +134,14 @@ export default class App extends React.Component {
     if (error.status === 402) {
       document.location.href = `/plans?repo_id=${repo.id}`;
     } else {
-      alert("Your subscription could not be activated.");
+      if (window.Intercom) {
+        window.Intercom(
+          "showNewMessage",
+          "I cannot activate my repo. Please help!"
+        );
+      } else {
+        alert("Oh no, activating a repo failed. Please contact us!");
+      }
     }
   }
 
@@ -156,7 +163,14 @@ export default class App extends React.Component {
       this.trackRepoActivated(repo);
       this.commitRepoToState(repo);
     }).catch( () => {
-      alert("Your repo could not be enabled.");
+      if (window.Intercom) {
+        window.Intercom(
+          "showNewMessage",
+          "I cannot activate my repo. Please help!"
+        );
+      } else {
+        alert("Oh no, activating a repo failed. Please contact us!");
+      }
     });
   }
 

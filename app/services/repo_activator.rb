@@ -10,10 +10,10 @@ class RepoActivator
   def activate
     change_repository_state_quietly do
       if repo.private?
-        add_hound_to_repo && create_webhook && repo.activate
-      else
-        create_webhook && repo.activate
+        add_hound_to_repo
       end
+
+      create_webhook && repo.activate
     end
   end
 
@@ -61,15 +61,11 @@ class RepoActivator
 
   def add_hound_to_repo
     github.add_collaborator(repo.name, Hound::GITHUB_USERNAME)
-    hound_github.accept_invitation(repo.name)
-  end
-
-  def hound_github
-    @hound_github ||= GithubApi.new(Hound::GITHUB_TOKEN)
+    AcceptGitHubInvitationJob.perform_later(repo.name)
   end
 
   def github
-    @github ||= GithubApi.new(github_token)
+    @github ||= GitHubApi.new(github_token)
   end
 
   def create_webhook

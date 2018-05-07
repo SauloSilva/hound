@@ -70,16 +70,17 @@ describe RepoActivator do
 
     context "when repo is private" do
       context "when repo belongs to an org" do
-        it "adds Hound to repo" do
+        it "adds Hound to repo and accepts the GitHub invitation" do
           repo = create(:repo, :in_private_org)
           api = stub_github_api
           activator = build_activator(repo: repo)
+          allow(AcceptGitHubInvitationJob).to receive(:perform_later)
 
           activator.activate
 
           expect(api).to have_received(:add_collaborator).
             with(repo.name, Hound::GITHUB_USERNAME)
-          expect(api).to have_received(:accept_invitation).
+          expect(AcceptGitHubInvitationJob).to have_received(:perform_later).
             with(repo.name)
         end
 
@@ -134,6 +135,20 @@ describe RepoActivator do
 
           expect(result).to be_truthy
         end
+      end
+
+      it "enqueues an invitation job" do
+        repo = create(:repo, private: true)
+        activator = build_activator(repo: repo)
+        github_api = stub_github_api(add_collaborator: true)
+        allow(GitHubApi).to receive(:new).and_return(github_api)
+        allow(AcceptGitHubInvitationJob).to receive(:perform_later)
+
+        result = activator.activate
+
+        expect(result).to eq true
+        expect(AcceptGitHubInvitationJob).to have_received(:perform_later).
+          with(repo.name)
       end
     end
 
@@ -226,13 +241,7 @@ describe RepoActivator do
       it "does not raise" do
         repo = build(:repo, private: true)
         activator = build_activator(repo: repo)
-        github = instance_double(
-          "GithubApi",
-          create_hook: nil,
-          add_collaborator: nil,
-          accept_invitation: true,
-        )
-        allow(GithubApi).to receive(:new).and_return(github)
+        stub_github_api(create_hook: nil)
 
         expect { activator.activate }.not_to raise_error
       end
@@ -326,7 +335,7 @@ describe RepoActivator do
     context "when repo deactivation fails" do
       it "returns false" do
         activator = build_activator
-        allow(GithubApi).to receive(:new).and_raise(Octokit::Error.new)
+        allow(GitHubApi).to receive(:new).and_raise(Octokit::Error.new)
 
         result = activator.deactivate
 
@@ -336,7 +345,7 @@ describe RepoActivator do
       it "only swallows Octokit errors" do
         error = StandardError.new("this should bubble through")
         activator = build_activator
-        expect(GithubApi).to receive(:new).and_raise(error)
+        expect(GitHubApi).to receive(:new).and_raise(error)
 
         expect { activator.deactivate }.to raise_error(error)
       end
@@ -360,17 +369,16 @@ describe RepoActivator do
     RepoActivator.new(github_token: token, repo: repo)
   end
 
-  def stub_github_api
-    api = instance_double(
-      "GithubApi",
+  def stub_github_api(options = {})
+    default_options = {
       remove_hook: true,
-      add_collaborator: nil,
+      add_collaborator: true,
       remove_collaborator: true,
-      accept_invitation: true,
-    )
+    }
+    api = instance_double("GitHubApi", default_options.merge(options))
     hook = double(:hook, id: 1)
     allow(api).to receive(:create_hook).and_yield(hook)
-    allow(GithubApi).to receive(:new).and_return(api)
+    allow(GitHubApi).to receive(:new).and_return(api)
     api
   end
 end

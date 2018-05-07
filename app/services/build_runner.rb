@@ -6,10 +6,13 @@ class BuildRunner
     if repo && relevant_pull_request?
       review_pull_request
     end
-  rescue Config::ParserError => exception
+  rescue Config::ParserError, ConfigContent::ContentError => exception
     report_config_file_as_invalid(exception)
   rescue Octokit::NotFound, Octokit::Unauthorized
     remove_current_user_membership
+    raise
+  rescue StandardError
+    set_internal_error
     raise
   end
 
@@ -92,7 +95,7 @@ class BuildRunner
     ReportInvalidConfig.call(
       pull_request_number: payload.pull_request_number,
       commit_sha: payload.head_sha,
-      linter_name: exception.linter_name,
+      message: exception.message,
     )
   end
 

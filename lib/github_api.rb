@@ -3,7 +3,7 @@ require "attr_extras"
 require "octokit"
 require "base64"
 
-class GithubApi
+class GitHubApi
   ORGANIZATION_TYPE = "Organization"
   PREVIEW_API_HEADER = "application/vnd.github.black-cat-preview+json"
 
@@ -143,7 +143,7 @@ class GithubApi
       repo,
       sha,
       state,
-      context: "hound",
+      context: "Hound",
       description: description,
       target_url: target_url
     )

@@ -87,13 +87,10 @@ export default class App extends React.Component {
               <strong>{tierUsage}/{tierUsage}</strong>
             </div>
 
-            <p><strong>Activating "{repo_name}" will change the price you pay
+            <p><strong>Activating Hound for "{repo_name}" will change the price you pay
             per month.</strong></p>
 
-            <p>You'll be charged an extra ${this.getExtraCharge()} a month
-            (${this.getNewPrice()} total).</p>
-
-            <p>Upgrade to continue your activation of "{repo_name}"</p>
+            <p>Upgrade to continue with your new plan.</p>
           </section>
 
           <UpgradeSubscriptionLink
@@ -102,7 +99,7 @@ export default class App extends React.Component {
             repoId={repo_id}
             userHasCard={user_has_card}
           />
-          <a className="button tier-change-cancel" href="/repos">Cancel</a>
+          <a className="tier-change-cancel" href="/repos">Cancel</a>
         </div>
       </section>
     );

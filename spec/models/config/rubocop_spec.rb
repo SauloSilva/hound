@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Config::Ruby do
+describe Config::Rubocop do
   describe "#content" do
     it "dumps the config content to yaml" do
       raw_config = <<~EOS
@@ -22,7 +22,7 @@ describe Config::Ruby do
           "HoundConfig",
           content: { "LineLength" => { "Max" => 90 } },
         )
-        config = Config::Ruby.new(hound_config)
+        config = Config::Rubocop.new(hound_config)
 
         expect(config.content).to eq("LineLength" => { "Max" => 90 })
       end
@@ -83,7 +83,7 @@ describe Config::Ruby do
         }
         owner = instance_double("Owner", config_content: owner_config)
         hound_config = build_hound_config(commit, "config/rubocop.yml")
-        config = Config::Ruby.new(hound_config, owner: owner)
+        config = Config::Rubocop.new(hound_config, owner: owner)
 
         expect(config.content).to eq(
           "LineLength" => { "Max" => 40 },
@@ -154,7 +154,7 @@ describe Config::Ruby do
 
           expect { config.content }.to raise_error(
             Config::ParserError,
-            %r("config/.+\..+" must be a Hash),
+            "config/linter-config.any format is invalid",
           )
         end
       end
@@ -167,10 +167,7 @@ describe Config::Ruby do
           EOS
           config = build_config(raw_config)
 
-          expect { config.content }.to raise_error(
-            Config::ParserError,
-            /Tried to load unspecified class: Object/,
-          )
+          expect { config.content }.to raise_error(Config::ParserError)
         end
       end
     end

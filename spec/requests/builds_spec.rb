@@ -18,21 +18,21 @@ RSpec.describe "POST /builds" do
       violations = [new_violation1, existing_comment_violation, new_violation2]
       create(:repo, :active, github_id: repo_id, name: repo_name)
       stub_review_job(
-        RubocopReviewJob,
+        LintersJob,
         violations: violations,
         error: "invalid config syntax",
       )
 
       post builds_path, params: { payload: payload }
 
-      expect(FakeGithub.review_body).to eq <<~EOS.chomp
+      expect(FakeGitHub.review_body).to eq <<~EOS.chomp
         Some files could not be reviewed due to errors:
         <details>
         <summary>invalid config syntax</summary>
         <pre>invalid config syntax</pre>
         </details>
       EOS
-      expect(FakeGithub.comments).to match_array [
+      expect(FakeGitHub.comments).to match_array [
         {
           body: new_violation1[:message],
           path: "path/to/test_github_file.rb",
@@ -57,7 +57,7 @@ RSpec.describe "POST /builds" do
 
       post builds_path, params: { payload: payload }
 
-      expect(FakeGithub.comments).to be_empty
+      expect(FakeGitHub.comments).to be_empty
     end
   end
 
